@@ -1,0 +1,115 @@
+Table Creation Query
+CREATE DATABASE ShippingDWH
+GO
+USE ShippingDWH
+GO
+CREATE TABLE Item_Dim
+( ItemID INT NOT NULL IDENTITY,
+ItemType VARCHAR(50),
+PRIMARY KEY (ItemID));
+GO
+12
+CREATE TABLE Calendar_Dim
+(
+CalendarKey INT NOT NULL IDENTITY,
+FullDate DATE,
+DayofWeek_ CHAR(15),
+DayType CHAR(20),
+DayofMonth_ INT,
+Month_ CHAR(10),
+Quarter_ CHAR(2),
+Year_ INT,
+PRIMARY KEY (CalendarKey));
+GO
+CREATE TABLE Sales_Channel_Dim
+(SalesID INT NOT NULL IDENTITY,
+SalesChannel VARCHAR(100),
+PRIMARY KEY (SalesID));
+GO
+CREATE TABLE Location_Dim
+13
+( RegionID INT NOT NULL IDENTITY,
+Region VARCHAR(100),
+Country VARCHAR(100),
+PRIMARY KEY (RegionID));
+GO
+CREATE TABLE Sales_Fact
+(
+CalendarKey INT,
+RegionID INT,
+SalesID INT,
+ItemID INT,
+GrossProfit INT,
+UnitProfit INT,
+ProfitMargin DECIMAL(5,2)
+FOREIGN KEY (Calendarkey) REFERENCES Calendar_Dim (CalendarKey),
+FOREIGN KEY (SalesID) REFERENCES Sales_Channel_Dim (SalesID),
+FOREIGN KEY (RegionID) REFERENCES Location_Dim (RegionID),
+14
+FOREIGN KEY (ItemID) REFERENCES Item_Dim (ItemID),
+);
+Stored Procedure Queries
+1. Average Profit Margin By Item Type Per Year
+USE ShippingDWH
+GO
+CREATE PROCEDURE _AvgProfitMarginByItemType1
+AS
+BEGIN
+ SELECT 
+ I.ItemType,
+C.Year_,
+ AVG(SF.ProfitMargin) AS AvgProfitMargin
+ FROM Sales_Fact SF
+ JOIN Item_Dim I ON SF.ItemID = I.ItemID
+JOIN Calendar_Dim C ON SF.CalendarKey = C.CalendarKey
+ GROUP BY I.ItemType,C.Year_
+ ORDER BY C.Year_, AvgProfitMargin DESC;
+END;
+15
+GO 
+2. Gross Profit By Item Type Per Year
+USE ShippingDWH
+GO
+CREATE PROCEDURE sp_ItemTypeProfitByYear
+AS
+BEGIN
+ SELECT 
+ C.Year_,
+ I.ItemType,
+ SUM(SF.GrossProfit) AS TotalProfit
+ FROM Sales_Fact SF
+ JOIN Calendar_Dim C ON SF.CalendarKey = C.CalendarKey
+ JOIN Item_Dim I ON SF.ItemID = I.ItemID
+ GROUP BY C.Year_, I.ItemType
+ ORDER BY C.Year_, TotalProfit DESC;
+END;
+GO 
+16
+3. Average Profit Margin By Sales Channel Per Year
+USE ShippingDWH
+GO
+CREATE PROC Profitmargin_by_saleschannel2
+AS
+SELECT S.SalesChannel,AVG(sf.ProfitMargin) AS AvgProfitMargin,C.Year_
+FROM Sales_Fact sf
+INNER JOIN Sales_Channel_Dim S ON sf.SalesID=S.SalesID
+INNER JOIN Calendar_Dim C ON sf.CalendarKey=c.CalendarKey
+GROUP BY S.SalesChannel,C.Year_
+ORDER BY C.Year_,AvgProfitMargin DESC;
+4. Gross Profit By Year
+CREATE PROCEDURE GrossProfitByYear
+AS
+BEGIN
+ SELECT 
+ C.Year_,
+ SUM(sf.GrossProfit) AS TotalGrossProfit
+ FROM 
+17
+ SalesFact sf
+ INNER JOIN 
+ CalendarDim C ON sf.CalendarKey = C.CalendarKey
+ GROUP BY 
+ C.Year_
+ ORDER BY 
+ C.Year_;
+END;
