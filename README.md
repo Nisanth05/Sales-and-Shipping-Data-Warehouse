@@ -75,7 +75,7 @@ Interactive Tableau visuals provide:
 The project includes **paginated SSRS reports** for operational needs:
 
 - 🔹 Monthly Profit Summary
-- 🔹 Sales by Region and Item Type
+- 🔹 Sales by Item Type
 - 🔹 Profit Margin Breakdown Report
 - 🔹 Year-over-Year Comparison Report
 
